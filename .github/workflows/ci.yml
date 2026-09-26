@@ -50,18 +50,24 @@ jobs:
         with:
           version: "v1.31.0"
 
-      - name: Kustomize build (root)
+      - name: Kustomize build (root / starter)
         run: kubectl kustomize . > /tmp/kustomize-root.yaml && wc -l /tmp/kustomize-root.yaml
 
-      - name: Kustomize build (strict overlay)
+      - name: Kustomize build (overlays)
         run: |
-          kubectl kustomize overlays/fintech-baseline \
-            --load-restrictor=LoadRestrictionsNone \
-            > /tmp/kustomize-overlay.yaml
-          wc -l /tmp/kustomize-overlay.yaml
-          # ensure same-namespace policy is NOT present
-          if grep -q allow-same-namespace-example /tmp/kustomize-overlay.yaml; then
-            echo "ERROR: overlay should not include allow-same-namespace"
+          for ov in starter strict fintech-baseline; do
+            echo "== overlays/${ov}"
+            kubectl kustomize "overlays/${ov}" \
+              --load-restrictor=LoadRestrictionsNone \
+              > "/tmp/kustomize-${ov}.yaml"
+            wc -l "/tmp/kustomize-${ov}.yaml"
+          done
+          if grep -q allow-same-namespace-example /tmp/kustomize-strict.yaml; then
+            echo "ERROR: strict overlay should not include allow-same-namespace"
+            exit 1
+          fi
+          if ! grep -q allow-same-namespace-example /tmp/kustomize-starter.yaml; then
+            echo "ERROR: starter overlay should include allow-same-namespace"
             exit 1
           fi
 
@@ -76,6 +82,13 @@ jobs:
 
       - name: Kyverno policy unit tests
         run: kyverno test kyverno-tests/
+
+      - name: Makefile targets
+        run: |
+          make docs
+          make test
+          make kustomize-starter
+          make kustomize-strict
 
       - name: Run scripts/validate.sh
         run: bash scripts/validate.sh
