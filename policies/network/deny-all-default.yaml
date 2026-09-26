@@ -1,0 +1,21 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Default-deny NetworkPolicy for namespace fintech-workloads.
+# WARNING: Apply carefully. This blocks ALL ingress and egress for pods
+# selected by podSelector: {} until you add explicit allow policies
+# (see allow-dns.yaml and your own allow rules). Stage in non-prod first.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-default-example
+  namespace: fintech-workloads
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+  annotations:
+    description: "EXAMPLE default-deny ingress+egress — apply carefully"
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  # Empty ingress/egress lists = deny all for selected pods

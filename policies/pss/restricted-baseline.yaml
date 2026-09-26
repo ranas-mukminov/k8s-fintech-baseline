@@ -1,0 +1,67 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Kyverno ClusterPolicy approximating Pod Security Standards (restricted-ish):
+# - require runAsNonRoot
+# - drop ALL capabilities
+# - disallow privileged containers
+# Review, tune match/exclude, and test in non-prod before cluster-wide apply.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pss-restricted-baseline-example
+  annotations:
+    policies.kyverno.io/title: "PSS Restricted Baseline (EXAMPLE)"
+    policies.kyverno.io/category: "Pod Security"
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      EXAMPLE policy: enforce non-root, drop ALL capabilities, and disallow
+      privileged containers. Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: containers must set securityContext.runAsNonRoot=true."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true
+            containers:
+              - securityContext:
+                  runAsNonRoot: true
+    - name: drop-all-capabilities
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: containers must drop ALL capabilities."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  capabilities:
+                    drop:
+                      - "ALL"
+    - name: disallow-privileged
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: privileged containers are not allowed."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  privileged: "false"
