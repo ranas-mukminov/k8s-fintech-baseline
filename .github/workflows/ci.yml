@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: pip install --quiet pyyaml
+
+      - name: YAML parse (all *.yaml)
+        run: |
+          python3 - <<'PY'
+          import sys, pathlib, yaml
+          errors = []
+          for p in sorted(pathlib.Path(".").rglob("*.yaml")):
+              if ".git" in p.parts:
+                  continue
+              try:
+                  with p.open() as f:
+                      list(yaml.safe_load_all(f))
+                  print(f"OK  {p}")
+              except Exception as e:
+                  print(f"FAIL {p}: {e}", file=sys.stderr)
+                  errors.append(str(p))
+          if errors:
+              sys.exit(1)
+          print("All YAML documents parsed OK")
+          PY
+
+      - name: Install kubectl (for kustomize)
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.31.0"
+
+      - name: Kustomize build (root)
+        run: kubectl kustomize . > /tmp/kustomize-root.yaml && wc -l /tmp/kustomize-root.yaml
+
+      - name: Kustomize build (strict overlay)
+        run: |
+          kubectl kustomize overlays/fintech-baseline \
+            --load-restrictor=LoadRestrictionsNone \
+            > /tmp/kustomize-overlay.yaml
+          wc -l /tmp/kustomize-overlay.yaml
+          # ensure same-namespace policy is NOT present
+          if grep -q allow-same-namespace-example /tmp/kustomize-overlay.yaml; then
+            echo "ERROR: overlay should not include allow-same-namespace"
+            exit 1
+          fi
+
+      - name: Install Kyverno CLI
+        run: |
+          KYVERNO_VERSION=v1.13.0
+          curl -fsSL -o kyverno.tar.gz \
+            "https://github.com/kyverno/kyverno/releases/download/${KYVERNO_VERSION}/kyverno-cli_${KYVERNO_VERSION}_linux_x86_64.tar.gz"
+          tar -xzf kyverno.tar.gz kyverno
+          sudo install -m 755 kyverno /usr/local/bin/kyverno
+          kyverno version
+
+      - name: Kyverno policy unit tests
+        run: kyverno test kyverno-tests/
+
+      - name: Run scripts/validate.sh
+        run: bash scripts/validate.sh
