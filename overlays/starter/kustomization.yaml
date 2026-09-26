@@ -1,0 +1,13 @@
+# EXAMPLE overlay: starter pack — base + optional same-namespace allow.
+# Easier first apply for demos; still includes default-deny.
+# Build:  kubectl kustomize overlays/starter --load-restrictor=LoadRestrictionsNone
+# Apply:  kubectl apply -k overlays/starter --load-restrictor=LoadRestrictionsNone
+# WARNING: default-deny. Not certified PCI compliance.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: k8s-fintech-baseline-starter
+
+resources:
+  - ../../base
+  - ../../policies/network/allow-same-namespace.yaml

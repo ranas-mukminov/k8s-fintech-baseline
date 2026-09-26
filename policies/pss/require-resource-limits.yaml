@@ -1,0 +1,36 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Kyverno ClusterPolicy: require CPU and memory limits on every container.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resource-limits-example
+  annotations:
+    policies.kyverno.io/title: "Require Resource Limits (EXAMPLE)"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      EXAMPLE: every container must set resources.limits.memory and
+      resources.limits.cpu. Helps noisy-neighbor and DoS containment.
+      Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-limits
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: containers must set resources.limits.cpu and resources.limits.memory."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  limits:
+                    memory: "?*"
+                    cpu: "?*"

@@ -1,0 +1,40 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# OPTIONAL Kyverno ClusterPolicy: require livenessProbe and readinessProbe.
+# Uses Audit (not Enforce) so it is safe to apply while teams adopt probes.
+# Flip validationFailureAction to Enforce when ready.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-probes-example
+  annotations:
+    policies.kyverno.io/title: "Require Liveness/Readiness Probes (EXAMPLE, Audit)"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: low
+    policies.kyverno.io/description: >-
+      EXAMPLE (OPTIONAL, Audit mode): containers should define livenessProbe
+      and readinessProbe. Change to Enforce when your workloads are ready.
+      Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+    optional: "true"
+spec:
+  # OPTIONAL: Audit only — does not block admission
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: require-liveness-readiness
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE (Audit): containers should set livenessProbe and readinessProbe."
+        pattern:
+          spec:
+            containers:
+              - livenessProbe:
+                  periodSeconds: ">0"
+                readinessProbe:
+                  periodSeconds: ">0"

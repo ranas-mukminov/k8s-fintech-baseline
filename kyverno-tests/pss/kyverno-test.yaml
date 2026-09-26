@@ -4,9 +4,13 @@ metadata:
   name: pss-restricted-baseline-example
 policies:
   - ../../policies/pss/restricted-baseline.yaml
+  - ../../policies/pss/disallow-hostpath.yaml
+  - ../../policies/pss/disallow-privileged-ports.yaml
 resources:
   - resources/good-pod.yaml
   - resources/bad-privileged-pod.yaml
+  - resources/bad-hostpath-pod.yaml
+  - resources/bad-low-port-pod.yaml
 results:
   - kind: Pod
     policy: pss-restricted-baseline-example
@@ -43,4 +47,28 @@ results:
     rule: require-run-as-non-root
     resources:
       - bad-privileged-pod
+    result: fail
+  - kind: Pod
+    policy: disallow-hostpath-example
+    rule: disallow-hostpath
+    resources:
+      - good-pod
+    result: pass
+  - kind: Pod
+    policy: disallow-hostpath-example
+    rule: disallow-hostpath
+    resources:
+      - bad-hostpath-pod
+    result: fail
+  - kind: Pod
+    policy: disallow-privileged-ports-example
+    rule: disallow-privileged-ports
+    resources:
+      - good-pod
+    result: pass
+  - kind: Pod
+    policy: disallow-privileged-ports-example
+    rule: disallow-privileged-ports
+    resources:
+      - bad-low-port-pod
     result: fail

@@ -1,0 +1,28 @@
+# EXAMPLE base — shared namespace + Kyverno + network policies (no same-ns allow).
+# Used by overlays/starter and overlays/strict.
+# WARNING: includes default-deny NetworkPolicy. Stage in non-prod first.
+# Not certified PCI compliance.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: k8s-fintech-baseline-base
+
+resources:
+  # 1. Namespace first (NetworkPolicies are namespaced)
+  - ../examples/namespace.yaml
+  # 2. Kyverno ClusterPolicies (PSS / best practices)
+  - ../policies/pss/restricted-baseline.yaml
+  - ../policies/pss/disallow-hostpath.yaml
+  - ../policies/pss/disallow-privileged-ports.yaml
+  - ../policies/pss/disallow-latest-tag.yaml
+  - ../policies/pss/require-resource-limits.yaml
+  - ../policies/pss/require-resource-requests.yaml
+  - ../policies/pss/disallow-exec.yaml
+  - ../policies/pss/require-probes.yaml
+  - ../policies/pss/image-registry-allowlist.yaml
+  # 3. Kyverno ClusterPolicies (RBAC)
+  - ../policies/rbac/deny-cluster-admin-binding.yaml
+  # 4. NetworkPolicies — default-deny FIRST, then allows
+  - ../policies/network/deny-all-default.yaml
+  - ../policies/network/allow-dns.yaml
+  - ../policies/network/allow-https-egress.yaml

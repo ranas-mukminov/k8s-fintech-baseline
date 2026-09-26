@@ -1,0 +1,55 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Kyverno ClusterPolicy: deny Pod/exec (and Pod/attach) subresource requests.
+# Complements capability drops — reduces interactive break-glass into workloads.
+# Tune exclude for break-glass / platform namespaces before Enforce in prod.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-exec-example
+  annotations:
+    policies.kyverno.io/title: "Disallow Pod Exec/Attach (EXAMPLE)"
+    policies.kyverno.io/category: "Pod Security"
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >-
+      EXAMPLE: deny kubectl exec / attach into pods. Prefer logs, metrics,
+      and ephemeral debug pods with controlled RBAC. Not a claim of PCI-DSS
+      certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: deny-exec
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod/exec
+      validate:
+        message: "EXAMPLE: Pod exec is not allowed by this baseline."
+        deny:
+          conditions:
+            any:
+              - key: "{{ request.operation || 'CONNECT' }}"
+                operator: AnyIn
+                value:
+                  - CONNECT
+                  - CREATE
+    - name: deny-attach
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod/attach
+      validate:
+        message: "EXAMPLE: Pod attach is not allowed by this baseline."
+        deny:
+          conditions:
+            any:
+              - key: "{{ request.operation || 'CONNECT' }}"
+                operator: AnyIn
+                value:
+                  - CONNECT
+                  - CREATE

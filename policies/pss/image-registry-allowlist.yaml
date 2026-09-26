@@ -1,0 +1,51 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+#
+# TODO: Replace ALLOWED_REGISTRY_* placeholders with your org registries before
+#       enabling this policy in Enforce mode. Until then it is a STUB and uses
+#       Audit so it will not block workloads accidentally.
+#
+# Kyverno ClusterPolicy stub: allow images only from approved registries.
+# Common FinTech pattern: private registry / mirrored base images only.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: image-registry-allowlist-example
+  annotations:
+    policies.kyverno.io/title: "Image Registry Allowlist (EXAMPLE STUB)"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      EXAMPLE STUB: restrict container images to an allowlisted set of
+      registries. Edit the foreach values below (TODO markers) then flip
+      validationFailureAction to Enforce. Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+    stub: "true"
+spec:
+  # STUB: Audit until you replace TODOs and review blast radius
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: validate-registries
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: >-
+          EXAMPLE STUB: image registry is not in the allowlist.
+          TODO: update allowedPrefixes in this policy for your org.
+        foreach:
+          - list: "request.object.spec.containers"
+            pattern:
+              # TODO: replace these example prefixes with your approved registries.
+              # Examples of what you might allow (illustrative only):
+              #   - "registry.example.com/"
+              #   - "ghcr.io/your-org/"
+              #   - "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+              # Until customized, this stub uses a broad placeholder that you
+              # MUST tighten — current pattern is intentionally permissive
+              # documentation-only via Audit mode.
+              image: "registry.example.com/* | ghcr.io/YOUR-ORG/* | ALLOWED_REGISTRY_TODO/*"

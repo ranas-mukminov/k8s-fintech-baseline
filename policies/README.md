@@ -10,21 +10,41 @@
 | [`pss/require-ro-rootfs.yaml`](pss/require-ro-rootfs.yaml) | Kyverno `ClusterPolicy` | Cluster | Standalone RO rootfs (optional) |
 | [`pss/disallow-hostpath.yaml`](pss/disallow-hostpath.yaml) | Kyverno `ClusterPolicy` | Cluster | No hostPath volumes |
 | [`pss/disallow-privileged-ports.yaml`](pss/disallow-privileged-ports.yaml) | Kyverno `ClusterPolicy` | Cluster | containerPort ≥ 1024 |
+| [`pss/disallow-latest-tag.yaml`](pss/disallow-latest-tag.yaml) | Kyverno `ClusterPolicy` | Cluster | No `:latest` / require tag |
+| [`pss/require-resource-limits.yaml`](pss/require-resource-limits.yaml) | Kyverno `ClusterPolicy` | Cluster | CPU + memory limits |
+| [`pss/require-resource-requests.yaml`](pss/require-resource-requests.yaml) | Kyverno `ClusterPolicy` | Cluster | CPU + memory requests |
+| [`pss/disallow-exec.yaml`](pss/disallow-exec.yaml) | Kyverno `ClusterPolicy` | Cluster | Deny Pod/exec and Pod/attach |
+| [`pss/require-probes.yaml`](pss/require-probes.yaml) | Kyverno `ClusterPolicy` | Cluster | **OPTIONAL** liveness+readiness (**Audit**) |
+| [`pss/image-registry-allowlist.yaml`](pss/image-registry-allowlist.yaml) | Kyverno `ClusterPolicy` | Cluster | **STUB** — TODO your registries (**Audit**) |
 | [`rbac/deny-cluster-admin-binding.yaml`](rbac/deny-cluster-admin-binding.yaml) | Kyverno `ClusterPolicy` | Cluster | Deny bindings to `cluster-admin` |
 | [`network/deny-all-default.yaml`](network/deny-all-default.yaml) | `NetworkPolicy` | `fintech-workloads` | **WARNING** default-deny ingress+egress |
 | [`network/allow-dns.yaml`](network/allow-dns.yaml) | `NetworkPolicy` | `fintech-workloads` | DNS egress UDP/TCP 53 |
 | [`network/allow-https-egress.yaml`](network/allow-https-egress.yaml) | `NetworkPolicy` | `fintech-workloads` | HTTPS egress TCP 443 |
-| [`network/allow-same-namespace.yaml`](network/allow-same-namespace.yaml) | `NetworkPolicy` | `fintech-workloads` | Optional same-ns traffic |
+| [`network/allow-same-namespace.yaml`](network/allow-same-namespace.yaml) | `NetworkPolicy` | `fintech-workloads` | Optional same-ns traffic (starter only) |
+
+## Overlays
+
+| Overlay | Same-namespace allow | Notes |
+|---------|----------------------|-------|
+| `overlays/starter` / root `.` | Yes | First demos |
+| `overlays/strict` | No | Stronger isolation |
+| `overlays/fintech-baseline` | No | Compat → strict |
 
 ## Suggested apply order
 
 1. Create namespace: `kubectl apply -f ../examples/namespace.yaml`
-2. Install Kyverno (see root README).
+2. Install Kyverno (see root README / `docs/QUICKSTART.md`).
 3. Apply PSS + RBAC ClusterPolicies.
 4. Apply network policies **in a test namespace first**:
    - `deny-all-default.yaml` ⚠️
    - then `allow-dns.yaml`, `allow-https-egress.yaml`, and optionally `allow-same-namespace.yaml`
 
-Or use kustomize from repo root: `kubectl apply -k .` (same WARNING).
+Or: `kubectl apply -k overlays/starter --load-restrictor=LoadRestrictionsNone` (same WARNING).
 
 Default-deny without allow rules will break pod egress (and often ingress). Always stage in non-prod.
+
+## Customize stubs before Enforce
+
+- `image-registry-allowlist.yaml` — replace `TODO` / `ALLOWED_REGISTRY_*` prefixes
+- `require-probes.yaml` — flip `Audit` → `Enforce` when ready
+- `disallow-exec.yaml` — add exclude for break-glass namespaces

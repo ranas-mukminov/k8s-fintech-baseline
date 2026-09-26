@@ -1,16 +1,11 @@
-# EXAMPLE overlay: full baseline without allow-same-namespace (stricter isolation).
-# Build requires: kubectl kustomize overlays/fintech-baseline --load-restrictor=LoadRestrictionsNone
-# (resources live in repo root policies/ — outside this directory)
+# COMPAT: alias for overlays/strict (kept for older docs / scripts).
+# Prefer overlays/strict going forward.
+# Build: kubectl kustomize overlays/fintech-baseline --load-restrictor=LoadRestrictionsNone
 # WARNING: default-deny without same-ns allow. Not certified PCI compliance.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+metadata:
+  name: k8s-fintech-baseline-fintech-compat
 
 resources:
-  - ../../examples/namespace.yaml
-  - ../../policies/pss/restricted-baseline.yaml
-  - ../../policies/pss/disallow-hostpath.yaml
-  - ../../policies/pss/disallow-privileged-ports.yaml
-  - ../../policies/rbac/deny-cluster-admin-binding.yaml
-  - ../../policies/network/deny-all-default.yaml
-  - ../../policies/network/allow-dns.yaml
-  - ../../policies/network/allow-https-egress.yaml
+  - ../strict

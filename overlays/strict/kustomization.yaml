@@ -1,0 +1,12 @@
+# EXAMPLE overlay: strict — base only (no same-namespace allow).
+# Stronger namespace isolation; workloads must use explicit NetworkPolicies
+# for any east-west traffic.
+# Build:  kubectl kustomize overlays/strict --load-restrictor=LoadRestrictionsNone
+# WARNING: default-deny without same-ns allow. Not certified PCI compliance.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: k8s-fintech-baseline-strict
+
+resources:
+  - ../../base

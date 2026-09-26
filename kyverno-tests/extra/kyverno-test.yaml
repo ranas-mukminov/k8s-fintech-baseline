@@ -1,0 +1,74 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: extra-pss-policies-example
+policies:
+  - ../../policies/pss/disallow-latest-tag.yaml
+  - ../../policies/pss/require-resource-limits.yaml
+  - ../../policies/pss/require-resource-requests.yaml
+  - ../../policies/pss/require-probes.yaml
+resources:
+  - resources/good-tagged-pod.yaml
+  - resources/bad-latest-pod.yaml
+  - resources/bad-no-resources-pod.yaml
+  - resources/good-probes-pod.yaml
+  - resources/bad-no-probes-pod.yaml
+results:
+  # disallow-latest-tag
+  - kind: Pod
+    policy: disallow-latest-tag-example
+    rule: require-image-tag
+    resources:
+      - good-tagged-pod
+    result: pass
+  - kind: Pod
+    policy: disallow-latest-tag-example
+    rule: disallow-latest-tag
+    resources:
+      - good-tagged-pod
+    result: pass
+  - kind: Pod
+    policy: disallow-latest-tag-example
+    rule: disallow-latest-tag
+    resources:
+      - bad-latest-pod
+    result: fail
+  # require-resource-limits
+  - kind: Pod
+    policy: require-resource-limits-example
+    rule: require-limits
+    resources:
+      - good-tagged-pod
+    result: pass
+  - kind: Pod
+    policy: require-resource-limits-example
+    rule: require-limits
+    resources:
+      - bad-no-resources-pod
+    result: fail
+  # require-resource-requests
+  - kind: Pod
+    policy: require-resource-requests-example
+    rule: require-requests
+    resources:
+      - good-tagged-pod
+    result: pass
+  - kind: Pod
+    policy: require-resource-requests-example
+    rule: require-requests
+    resources:
+      - bad-no-resources-pod
+    result: fail
+  # require-probes (Audit policy — still asserts pass/fail against pattern)
+  - kind: Pod
+    policy: require-probes-example
+    rule: require-liveness-readiness
+    resources:
+      - good-probes-pod
+    result: pass
+  - kind: Pod
+    policy: require-probes-example
+    rule: require-liveness-readiness
+    resources:
+      - bad-no-probes-pod
+    result: fail

@@ -1,0 +1,46 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Kyverno ClusterPolicy: disallow container images tagged :latest (or untagged).
+# Prefer immutable digests or explicit version tags for auditability.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag-example
+  annotations:
+    policies.kyverno.io/title: "Disallow latest Image Tag (EXAMPLE)"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      EXAMPLE: container images must not use the :latest tag (or omit a tag,
+      which defaults to latest). Prefer digests or pinned versions.
+      Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-image-tag
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: images must include an explicit tag (not empty / not latest)."
+        pattern:
+          spec:
+            containers:
+              - image: "*:*"
+    - name: disallow-latest-tag
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: image tag ':latest' is not allowed. Pin a version or digest."
+        pattern:
+          spec:
+            containers:
+              - image: "!*:latest"

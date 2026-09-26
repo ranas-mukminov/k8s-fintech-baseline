@@ -52,11 +52,28 @@ if command -v kubectl >/dev/null 2>&1; then
     echo "  FAIL root kustomization"
     fail=1
   fi
-  echo "-- kubectl kustomize overlays/fintech-baseline (LoadRestrictionsNone)"
-  if kubectl kustomize overlays/fintech-baseline --load-restrictor=LoadRestrictionsNone >/dev/null; then
-    echo "  OK  overlay builds"
+  for ov in starter strict fintech-baseline; do
+    echo "-- kubectl kustomize overlays/${ov} (LoadRestrictionsNone)"
+    if kubectl kustomize "overlays/${ov}" --load-restrictor=LoadRestrictionsNone >/dev/null; then
+      echo "  OK  overlays/${ov} builds"
+    else
+      echo "  FAIL overlays/${ov}"
+      fail=1
+    fi
+  done
+  # strict must NOT include same-namespace allow
+  strict_out=$(kubectl kustomize overlays/strict --load-restrictor=LoadRestrictionsNone)
+  if echo "$strict_out" | grep -q allow-same-namespace-example; then
+    echo "  FAIL strict overlay includes allow-same-namespace"
+    fail=1
   else
-    echo "  FAIL overlay"
+    echo "  OK  strict overlay excludes allow-same-namespace"
+  fi
+  starter_out=$(kubectl kustomize overlays/starter --load-restrictor=LoadRestrictionsNone)
+  if echo "$starter_out" | grep -q allow-same-namespace-example; then
+    echo "  OK  starter overlay includes allow-same-namespace"
+  else
+    echo "  FAIL starter overlay missing allow-same-namespace"
     fail=1
   fi
 else
@@ -78,11 +95,11 @@ if command -v kyverno >/dev/null 2>&1; then
   echo
   echo "   Cluster dry-run (optional, needs kubeconfig + Kyverno CRDs):"
   echo "     kyverno apply policies/pss/ --dry-run"
-  echo "     kubectl apply -k . --dry-run=server"
+  echo "     kubectl apply -k overlays/starter --dry-run=server --load-restrictor=LoadRestrictionsNone"
 else
   echo "-- kyverno CLI not found; skip policy unit tests"
   echo "   Install: https://kyverno.io/docs/kyverno-cli/"
-  echo "   Then: kyverno test kyverno-tests/"
+  echo "   Then: kyverno test kyverno-tests/   (or: make test)"
 fi
 echo
 
@@ -93,4 +110,4 @@ fi
 echo "RESULT: OK"
 echo
 echo "WARNING: Do not apply default-deny NetworkPolicies to production without"
-echo "staging. See README.md apply order."
+echo "staging. See docs/QUICKSTART.md and README.md apply order."

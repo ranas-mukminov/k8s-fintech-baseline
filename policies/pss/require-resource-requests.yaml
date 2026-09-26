@@ -1,0 +1,36 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Kyverno ClusterPolicy: require CPU and memory requests on every container.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resource-requests-example
+  annotations:
+    policies.kyverno.io/title: "Require Resource Requests (EXAMPLE)"
+    policies.kyverno.io/category: "Best Practices"
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      EXAMPLE: every container must set resources.requests.memory and
+      resources.requests.cpu for predictable scheduling.
+      Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-requests
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: containers must set resources.requests.cpu and resources.requests.memory."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  requests:
+                    memory: "?*"
+                    cpu: "?*"

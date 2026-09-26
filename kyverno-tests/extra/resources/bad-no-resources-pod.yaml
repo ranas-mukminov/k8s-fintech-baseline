@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-no-resources-pod
+  namespace: fintech-workloads
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36
