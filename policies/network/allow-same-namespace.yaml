@@ -1,0 +1,25 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Optional: allow ingress and egress between pods in the same namespace.
+# Useful when default-deny is on and services talk to each other locally.
+# Prefer tighter selectors (app labels) in production instead of podSelector: {}.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace-example
+  namespace: fintech-workloads
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+  annotations:
+    description: "EXAMPLE allow same-namespace ingress+egress (optional)"
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+  egress:
+    - to:
+        - podSelector: {}

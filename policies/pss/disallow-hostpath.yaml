@@ -1,0 +1,32 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Kyverno ClusterPolicy: disallow hostPath volumes (common privilege-escalation path).
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-hostpath-example
+  annotations:
+    policies.kyverno.io/title: "Disallow hostPath Volumes (EXAMPLE)"
+    policies.kyverno.io/category: "Pod Security"
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      EXAMPLE: hostPath volumes are not allowed. Prefer emptyDir, PVC, or projected
+      volumes. Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: disallow-hostpath
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: hostPath volumes are not allowed."
+        pattern:
+          spec:
+            =(volumes):
+              - X(hostPath): "null"

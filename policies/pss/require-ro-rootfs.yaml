@@ -1,0 +1,35 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Standalone Kyverno ClusterPolicy: require readOnlyRootFilesystem.
+# Prefer applying via restricted-baseline.yaml if you want the full pack;
+# use this file when you only need the RO rootfs rule.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-ro-rootfs-example
+  annotations:
+    policies.kyverno.io/title: "Require Read-Only Root Filesystem (EXAMPLE)"
+    policies.kyverno.io/category: "Pod Security"
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      EXAMPLE: containers must set securityContext.readOnlyRootFilesystem=true.
+      Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: require-readonly-rootfs
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: containers must set readOnlyRootFilesystem=true."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  readOnlyRootFilesystem: true

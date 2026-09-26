@@ -1,0 +1,33 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Kyverno ClusterPolicy: disallow container ports below 1024 (privileged ports).
+# Useful when runAsNonRoot is enforced and you want to avoid CAP_NET_BIND_SERVICE.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-ports-example
+  annotations:
+    policies.kyverno.io/title: "Disallow Privileged Ports (EXAMPLE)"
+    policies.kyverno.io/category: "Pod Security"
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      EXAMPLE: container ports must be >= 1024. Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: disallow-privileged-ports
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "EXAMPLE: container ports must be >= 1024 (no privileged ports)."
+        pattern:
+          spec:
+            containers:
+              - =(ports):
+                  - =(containerPort): ">1023"

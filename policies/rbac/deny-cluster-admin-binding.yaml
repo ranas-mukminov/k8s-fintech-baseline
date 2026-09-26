@@ -1,0 +1,43 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Kyverno ClusterPolicy: deny ClusterRoleBinding / RoleBinding to cluster-admin.
+# Reduces accidental standing cluster-admin grants. Tune exclude for break-glass.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: deny-cluster-admin-binding-example
+  annotations:
+    policies.kyverno.io/title: "Deny cluster-admin Bindings (EXAMPLE)"
+    policies.kyverno.io/category: "RBAC"
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >-
+      EXAMPLE: disallow ClusterRoleBinding or RoleBinding that references
+      the cluster-admin ClusterRole. Not a claim of PCI-DSS certification.
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: deny-cluster-admin-clusterrolebinding
+      match:
+        any:
+          - resources:
+              kinds:
+                - ClusterRoleBinding
+      validate:
+        message: "EXAMPLE: ClusterRoleBinding to cluster-admin is not allowed."
+        pattern:
+          roleRef:
+            name: "!cluster-admin"
+    - name: deny-cluster-admin-rolebinding
+      match:
+        any:
+          - resources:
+              kinds:
+                - RoleBinding
+      validate:
+        message: "EXAMPLE: RoleBinding to cluster-admin is not allowed."
+        pattern:
+          roleRef:
+            name: "!cluster-admin"

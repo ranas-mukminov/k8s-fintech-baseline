@@ -1,0 +1,23 @@
+# EXAMPLE ONLY — not certified PCI compliance.
+# Allow HTTPS (TCP 443) egress for pods in fintech-workloads.
+# WARNING: This allows egress to ANY destination on 443. Narrow with
+# ipBlock / namespaceSelector / podSelector for production.
+# Stage in non-prod; combine with default-deny + allow-dns.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-https-egress-example
+  namespace: fintech-workloads
+  labels:
+    app.kubernetes.io/part-of: k8s-fintech-baseline
+    example: "true"
+  annotations:
+    description: "EXAMPLE allow HTTPS egress (TCP 443) — narrow destinations in prod"
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 443
