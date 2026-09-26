@@ -1,0 +1,25 @@
+# EXAMPLE kustomization — applies namespace then policies in a sensible order.
+# WARNING: NetworkPolicies include default-deny. Stage in non-prod first.
+# Not certified PCI compliance.
+#
+# Build:  kubectl kustomize .
+# Apply:  kubectl apply -k .   # DANGEROUS with default-deny — non-prod first
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+  name: k8s-fintech-baseline-example
+
+resources:
+  # 1. Namespace first (NetworkPolicies are namespaced)
+  - examples/namespace.yaml
+  # 2. Kyverno ClusterPolicies (PSS)
+  - policies/pss/restricted-baseline.yaml
+  - policies/pss/disallow-hostpath.yaml
+  - policies/pss/disallow-privileged-ports.yaml
+  # 3. Kyverno ClusterPolicies (RBAC)
+  - policies/rbac/deny-cluster-admin-binding.yaml
+  # 4. NetworkPolicies — default-deny FIRST, then allows
+  - policies/network/deny-all-default.yaml
+  - policies/network/allow-dns.yaml
+  - policies/network/allow-https-egress.yaml
+  - policies/network/allow-same-namespace.yaml

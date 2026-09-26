@@ -1,0 +1,46 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pss-restricted-baseline-example
+policies:
+  - ../../policies/pss/restricted-baseline.yaml
+resources:
+  - resources/good-pod.yaml
+  - resources/bad-privileged-pod.yaml
+results:
+  - kind: Pod
+    policy: pss-restricted-baseline-example
+    rule: require-run-as-non-root
+    resources:
+      - good-pod
+    result: pass
+  - kind: Pod
+    policy: pss-restricted-baseline-example
+    rule: drop-all-capabilities
+    resources:
+      - good-pod
+    result: pass
+  - kind: Pod
+    policy: pss-restricted-baseline-example
+    rule: disallow-privileged
+    resources:
+      - good-pod
+    result: pass
+  - kind: Pod
+    policy: pss-restricted-baseline-example
+    rule: require-readonly-rootfs
+    resources:
+      - good-pod
+    result: pass
+  - kind: Pod
+    policy: pss-restricted-baseline-example
+    rule: disallow-privileged
+    resources:
+      - bad-privileged-pod
+    result: fail
+  - kind: Pod
+    policy: pss-restricted-baseline-example
+    rule: require-run-as-non-root
+    resources:
+      - bad-privileged-pod
+    result: fail

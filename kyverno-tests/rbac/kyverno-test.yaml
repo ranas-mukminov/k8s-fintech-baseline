@@ -1,0 +1,22 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: deny-cluster-admin-binding-example
+policies:
+  - ../../policies/rbac/deny-cluster-admin-binding.yaml
+resources:
+  - resources/good-binding.yaml
+  - resources/bad-cluster-admin-binding.yaml
+results:
+  - kind: ClusterRoleBinding
+    policy: deny-cluster-admin-binding-example
+    rule: deny-cluster-admin-clusterrolebinding
+    resources:
+      - good-view-binding
+    result: pass
+  - kind: ClusterRoleBinding
+    policy: deny-cluster-admin-binding-example
+    rule: deny-cluster-admin-clusterrolebinding
+    resources:
+      - bad-cluster-admin-binding
+    result: fail
