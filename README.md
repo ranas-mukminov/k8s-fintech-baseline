@@ -13,6 +13,9 @@
 
 ## Demo (asciinema-style walkthrough)
 
+**60s proof:** `make validate` prints per-policy OK lines and `RESULT: OK` (Kyverno unit tests, no cluster) in about a minute on a laptop.
+
+
 ```text
 $ git clone https://github.com/ranas-mukminov/k8s-fintech-baseline.git && cd k8s-fintech-baseline
 $ make validate
