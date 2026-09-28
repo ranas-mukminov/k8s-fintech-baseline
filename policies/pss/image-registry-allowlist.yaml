@@ -16,7 +16,7 @@ metadata:
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
       EXAMPLE STUB: restrict container images to an allowlisted set of
-      registries. Edit the foreach values below (TODO markers) then flip
+      registries (containers, initContainers, ephemeralContainers). Edit the foreach values below (TODO markers) then flip
       validationFailureAction to Enforce. Not a claim of PCI-DSS certification.
   labels:
     app.kubernetes.io/part-of: k8s-fintech-baseline
@@ -39,6 +39,28 @@ spec:
           TODO: update allowedPrefixes in this policy for your org.
         foreach:
           - list: "request.object.spec.containers"
+            pattern:
+              # TODO: replace these example prefixes with your approved registries.
+              # Examples of what you might allow (illustrative only):
+              #   - "registry.example.com/"
+              #   - "ghcr.io/your-org/"
+              #   - "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+              # Until customized, this stub uses a broad placeholder that you
+              # MUST tighten — current pattern is intentionally permissive
+              # documentation-only via Audit mode.
+              image: "registry.example.com/* | ghcr.io/YOUR-ORG/* | ALLOWED_REGISTRY_TODO/*"
+          - list: "request.object.spec.initContainers || []"
+            pattern:
+              # TODO: replace these example prefixes with your approved registries.
+              # Examples of what you might allow (illustrative only):
+              #   - "registry.example.com/"
+              #   - "ghcr.io/your-org/"
+              #   - "123456789012.dkr.ecr.us-east-1.amazonaws.com/"
+              # Until customized, this stub uses a broad placeholder that you
+              # MUST tighten — current pattern is intentionally permissive
+              # documentation-only via Audit mode.
+              image: "registry.example.com/* | ghcr.io/YOUR-ORG/* | ALLOWED_REGISTRY_TODO/*"
+          - list: "request.object.spec.ephemeralContainers || []"
             pattern:
               # TODO: replace these example prefixes with your approved registries.
               # Examples of what you might allow (illustrative only):
