@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-latest-init-pod
+  namespace: fintech-workloads
+spec:
+  initContainers:
+    - name: init
+      image: busybox:latest
+  containers:
+    - name: app
+      image: busybox:1.36
