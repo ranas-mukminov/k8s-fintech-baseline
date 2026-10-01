@@ -1,6 +1,8 @@
 # EXAMPLE ONLY — not certified PCI compliance.
 # Kyverno ClusterPolicy: disallow container images tagged :latest (or untagged).
 # Prefer immutable digests or explicit version tags for auditability.
+# Covers containers, initContainers, and ephemeralContainers (same scope as
+# image-registry-allowlist).
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -12,6 +14,7 @@ metadata:
     policies.kyverno.io/description: >-
       EXAMPLE: container images must not use the :latest tag (or omit a tag,
       which defaults to latest). Prefer digests or pinned versions.
+      Applies to containers, initContainers, and ephemeralContainers.
       Not a claim of PCI-DSS certification.
   labels:
     app.kubernetes.io/part-of: k8s-fintech-baseline
@@ -28,10 +31,16 @@ spec:
                 - Pod
       validate:
         message: "EXAMPLE: images must include an explicit tag (not empty / not latest)."
-        pattern:
-          spec:
-            containers:
-              - image: "*:*"
+        foreach:
+          - list: "request.object.spec.containers"
+            pattern:
+              image: "*:*"
+          - list: "request.object.spec.initContainers || []"
+            pattern:
+              image: "*:*"
+          - list: "request.object.spec.ephemeralContainers || []"
+            pattern:
+              image: "*:*"
     - name: disallow-latest-tag
       match:
         any:
@@ -40,7 +49,13 @@ spec:
                 - Pod
       validate:
         message: "EXAMPLE: image tag ':latest' is not allowed. Pin a version or digest."
-        pattern:
-          spec:
-            containers:
-              - image: "!*:latest"
+        foreach:
+          - list: "request.object.spec.containers"
+            pattern:
+              image: "!*:latest"
+          - list: "request.object.spec.initContainers || []"
+            pattern:
+              image: "!*:latest"
+          - list: "request.object.spec.ephemeralContainers || []"
+            pattern:
+              image: "!*:latest"

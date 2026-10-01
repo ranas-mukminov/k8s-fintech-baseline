@@ -10,6 +10,7 @@ policies:
 resources:
   - resources/good-tagged-pod.yaml
   - resources/bad-latest-pod.yaml
+  - resources/bad-latest-init-pod.yaml
   - resources/bad-no-resources-pod.yaml
   - resources/good-probes-pod.yaml
   - resources/bad-no-probes-pod.yaml
@@ -32,6 +33,12 @@ results:
     rule: disallow-latest-tag
     resources:
       - bad-latest-pod
+    result: fail
+  - kind: Pod
+    policy: disallow-latest-tag-example
+    rule: disallow-latest-tag
+    resources:
+      - bad-latest-init-pod
     result: fail
   # require-resource-limits
   - kind: Pod
