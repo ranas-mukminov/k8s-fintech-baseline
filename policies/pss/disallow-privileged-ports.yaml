@@ -10,7 +10,10 @@ metadata:
     policies.kyverno.io/category: "Pod Security"
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
-      EXAMPLE: container ports must be >= 1024. Not a claim of PCI-DSS certification.
+      EXAMPLE: container ports must be >= 1024, including initContainers
+      (native sidecars with restartPolicy: Always keep running and can bind
+      ports). Ephemeral containers cannot declare ports. Not a claim of
+      PCI-DSS certification.
   labels:
     app.kubernetes.io/part-of: k8s-fintech-baseline
     example: "true"
@@ -29,5 +32,8 @@ spec:
         pattern:
           spec:
             containers:
+              - =(ports):
+                  - =(containerPort): ">1023"
+            =(initContainers):
               - =(ports):
                   - =(containerPort): ">1023"
