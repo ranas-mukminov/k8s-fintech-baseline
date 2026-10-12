@@ -12,6 +12,7 @@ resources:
   - resources/bad-hostpath-pod.yaml
   - resources/bad-low-port-pod.yaml
   - resources/bad-low-port-sidecar-pod.yaml
+  - resources/bad-rw-init-pod.yaml
 results:
   - kind: Pod
     policy: pss-restricted-baseline-example
@@ -78,4 +79,10 @@ results:
     rule: disallow-privileged-ports
     resources:
       - bad-low-port-sidecar-pod
+    result: fail
+  - kind: Pod
+    policy: pss-restricted-baseline-example
+    rule: require-readonly-rootfs
+    resources:
+      - bad-rw-init-pod
     result: fail
