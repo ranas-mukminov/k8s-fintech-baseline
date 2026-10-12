@@ -11,8 +11,10 @@ metadata:
     policies.kyverno.io/category: "Pod Security"
     policies.kyverno.io/severity: medium
     policies.kyverno.io/description: >-
-      EXAMPLE: containers must set securityContext.readOnlyRootFilesystem=true.
-      Not a claim of PCI-DSS certification.
+      EXAMPLE: containers and initContainers must set
+      securityContext.readOnlyRootFilesystem=true. Native sidecars
+      (initContainers with restartPolicy: Always) keep running and need the
+      same RO rootfs constraint. Not a claim of PCI-DSS certification.
   labels:
     app.kubernetes.io/part-of: k8s-fintech-baseline
     example: "true"
@@ -27,9 +29,12 @@ spec:
               kinds:
                 - Pod
       validate:
-        message: "EXAMPLE: containers must set readOnlyRootFilesystem=true."
+        message: "EXAMPLE: containers and initContainers must set readOnlyRootFilesystem=true."
         pattern:
           spec:
             containers:
+              - securityContext:
+                  readOnlyRootFilesystem: true
+            =(initContainers):
               - securityContext:
                   readOnlyRootFilesystem: true

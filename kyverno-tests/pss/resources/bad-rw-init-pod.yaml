@@ -1,0 +1,32 @@
+# initContainer omits readOnlyRootFilesystem — must fail require-readonly-rootfs
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-rw-init-pod
+  namespace: default
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  initContainers:
+    - name: init
+      image: registry.example.com/init:1.0.0
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        runAsUser: 1000
+        capabilities:
+          drop: ["ALL"]
+        # intentionally missing readOnlyRootFilesystem
+  containers:
+    - name: app
+      image: registry.example.com/app:1.2.3
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 1000
+        capabilities:
+          drop: ["ALL"]

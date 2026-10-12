@@ -74,9 +74,12 @@ spec:
               kinds:
                 - Pod
       validate:
-        message: "EXAMPLE: containers must set readOnlyRootFilesystem=true."
+        message: "EXAMPLE: containers and initContainers must set readOnlyRootFilesystem=true."
         pattern:
           spec:
             containers:
+              - securityContext:
+                  readOnlyRootFilesystem: true
+            =(initContainers):
               - securityContext:
                   readOnlyRootFilesystem: true
